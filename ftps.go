@@ -1,18 +1,18 @@
 package main
 
 import (
-	"io"
-	"io/ioutil"
 	"bufio"
 	"flag"
 	"fmt"
 	"github.com/howeyc/gopass" // for reading password (setty off)
 	"github.com/souravdatta/goftp"
+	"io"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
-	"path/filepath"
 )
 
 // Command processing
@@ -163,7 +163,7 @@ func (ctx *context) action(code int, arg string) string {
 			if arg == "" {
 				arg = "~"
 			}
-			
+
 			err := ctx.ftp.Cwd(arg)
 			if err != nil {
 				return err.Error()
@@ -191,15 +191,15 @@ func (ctx *context) action(code int, arg string) string {
 			var files []string
 			var err error
 			var rd io.Reader
-			
+
 			if arg == "" {
 				return "Specify files to be PUT"
 			}
-			
+
 			if files, err = filepath.Glob(arg); err != nil {
 				return err.Error()
 			}
-			
+
 			for _, f := range files {
 				if rd, err = os.Open(f); err != nil {
 					return err.Error()
@@ -217,8 +217,8 @@ func (ctx *context) action(code int, arg string) string {
 			}
 			for _, f := range files {
 				parts := strings.Split(strings.Trim(f, "\n\r"), " ")
-				p := parts[len(parts) - 1]
-				ctx.ftp.Retr(p, func (f io.Reader) error {
+				p := parts[len(parts)-1]
+				ctx.ftp.Retr(p, func(f io.Reader) error {
 					content, err := ioutil.ReadAll(f)
 					if err != nil {
 						panic(err)
@@ -226,7 +226,7 @@ func (ctx *context) action(code int, arg string) string {
 					if err = ioutil.WriteFile(p, content, os.ModePerm); err != nil {
 						return err
 					}
-					
+
 					return nil
 				})
 			}
