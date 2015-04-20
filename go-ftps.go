@@ -18,12 +18,12 @@ import (
 // Command processing
 // Commands
 const (
-	BAD  int = iota
-	PWD      // list present working directory
-	CD       // cd to directory
-	LS       // simple list files in current directory
-	PUT      // put a file
-	GET      // get a file
+	BAD int = iota
+	PWD     // list present working directory
+	CD      // cd to directory
+	LS      // simple list files in current directory
+	PUT     // put a file
+	GET     // get a file
 )
 
 func get_command(part string) int {
@@ -186,49 +186,66 @@ func (ctx *context) action(code int, arg string) string {
 		}
 	case PUT:
 		{
-			var files []string
-			var err error
-			var rd io.Reader
-
 			if arg == "" {
-				return "Specify files to be PUT"
+				return "No arguments"
 			}
 
-			if files, err = filepath.Glob(arg); err != nil {
-				return err.Error()
-			}
+			pargs := strings.Split(arg, " ")
 
-			for _, f := range files {
-				if rd, err = os.Open(f); err != nil {
+			for _, parg := range pargs {
+				var files []string
+				var err error
+				var rd io.Reader
+
+				if parg == "" {
+					return "Specify files to be PUT"
+				}
+
+				if files, err = filepath.Glob(parg); err != nil {
 					return err.Error()
 				}
-				if err := ctx.ftp.Stor(f, rd); err != nil {
-					return err.Error()
+
+				for _, f := range files {
+					if rd, err = os.Open(f); err != nil {
+						return err.Error()
+					}
+					fmt.Println("\tputting " + f)
+					if err := ctx.ftp.Stor(f, rd); err != nil {
+						return err.Error()
+					}
 				}
 			}
 		}
 	case GET:
 		{
-			files, err := ctx.ftp.List(arg)
-			if err != nil {
-				return err.Error()
+			if arg == " " {
+				return "No arguments"
 			}
-			for _, f := range files {
-				parts := strings.Split(strings.Trim(f, "\n\r"), " ")
-				p := parts[len(parts)-1]
-				ctx.ftp.Retr(p, func(f io.Reader) error {
-					content, err := ioutil.ReadAll(f)
-					if err != nil {
-						panic(err)
-					}
-					if err = ioutil.WriteFile(p, content, os.ModePerm); err != nil {
-						return err
-					}
 
-					return nil
-				})
+			pargs := strings.Split(arg, " ")
+
+			for _, parg := range pargs {
+				files, err := ctx.ftp.List(parg)
+				if err != nil {
+					return err.Error()
+				}
+				for _, f := range files {
+					parts := strings.Split(strings.Trim(f, "\n\r"), " ")
+					p := parts[len(parts)-1]
+					fmt.Println("\t getting " + p)
+					ctx.ftp.Retr(p, func(f io.Reader) error {
+						content, err := ioutil.ReadAll(f)
+						if err != nil {
+							panic(err)
+						}
+						if err = ioutil.WriteFile(p, content, os.ModePerm); err != nil {
+							return err
+						}
+
+						return nil
+					})
+				}
 			}
-			return ""
 		}
 	}
 
