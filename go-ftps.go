@@ -232,7 +232,7 @@ func (ctx *context) action(code int, arg string) string {
 				for _, f := range files {
 					parts := strings.Split(strings.Trim(f, "\n\r"), " ")
 					p := parts[len(parts)-1]
-					fmt.Println("\t getting " + p)
+					fmt.Println("\tgetting " + p)
 					ctx.ftp.Retr(p, func(f io.Reader) error {
 						content, err := ioutil.ReadAll(f)
 						if err != nil {
