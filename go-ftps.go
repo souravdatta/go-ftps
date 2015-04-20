@@ -230,7 +230,7 @@ func (ctx *context) action(code int, arg string) string {
 					return nil
 				})
 			}
-			return "done"
+			return ""
 		}
 	}
 
