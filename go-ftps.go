@@ -24,8 +24,6 @@ const (
 	LS       // simple list files in current directory
 	PUT      // put a file
 	GET      // get a file
-	MPUT     // put multiple files
-	MGET     // get multiple files
 )
 
 func get_command(part string) int {
@@ -53,7 +51,7 @@ func parse(command string) (code int, arg string) {
 	} else if len(parts) > 1 {
 		code = get_command(parts[0])
 
-		if code == MPUT || code == MGET {
+		if code == PUT || code == GET {
 			arg = strings.Join(parts[1:len(parts)], " ")
 		} else {
 			arg = parts[1]
