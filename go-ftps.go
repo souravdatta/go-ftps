@@ -15,6 +15,10 @@ import (
 	"time"
 )
 
+const (
+	Timeout = 5 * 60 // timeout in seconds
+)
+
 // Command processing
 // Commands
 const (
@@ -107,7 +111,7 @@ func (ctx *context) init_context(sn, un, pass string, dbg bool) {
 	ctx.ftp = nil
 	ctx.debug = dbg
 
-	ctx.timer.init(5 * 60)
+	ctx.timer.init(Timeout)
 }
 
 func (ctx *context) disconnect() {
@@ -263,8 +267,10 @@ func usage() {
 
 // read_credentials ~ read user name and password
 func read_username(user_name *string) {
-	fmt.Printf("username: ")
-	fmt.Scanf("%s", user_name)
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("username: ")
+	*user_name, _ = reader.ReadString('\n')
+	*user_name = strings.Trim(*user_name, "\n\r")
 }
 
 func read_password(passwd *string) {
@@ -294,14 +300,14 @@ func repl() {
 		}
 
 		code, arg := parse(command)
-		if ctx.timer.is_active {
-			ctx.timer.reset()
-		} else {
+
+		if !ctx.timer.is_active {
 			ctx.disconnect()
 			ctx.connect()
 		}
 
 		fmt.Println(ctx.action(code, arg))
+		ctx.timer.reset()
 	}
 }
 
